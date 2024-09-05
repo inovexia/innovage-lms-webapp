@@ -65,8 +65,8 @@ const shortcuts = [
 const notifications = [
   {
     avatarImage: '/images/avatars/2.png',
-    title: 'Congratulations Flora 🎉',
-    subtitle: 'Won the monthly bestseller gold badge',
+    title: 'User needs your approval',
+    subtitle: 'Joe requested for approval',
     time: '1h ago',
     read: false
   },
@@ -78,7 +78,7 @@ const notifications = [
   },
   {
     avatarImage: '/images/avatars/3.png',
-    title: 'Bernard Woods',
+    title: 'User needs your approval',
     subtitle: 'You have new message from Bernard Woods',
     time: 'May 18, 8:26 AM',
     read: true
@@ -86,16 +86,16 @@ const notifications = [
   {
     avatarIcon: 'ri-bar-chart-line',
     avatarColor: 'info',
-    title: 'Monthly report generated',
-    subtitle: 'July month financial report is generated',
+    title: 'Module added',
+    subtitle: 'James added a new module',
     time: 'Apr 24, 10:30 AM',
     read: true
   },
   {
     avatarText: 'MG',
     avatarColor: 'success',
-    title: 'Application has been approved 🚀',
-    subtitle: 'Your Meta Gadgets project application has been approved.',
+    title: 'Three more connections',
+    subtitle: 'Three user joined your batch',
     time: 'Feb 17, 12:17 PM',
     read: true
   },

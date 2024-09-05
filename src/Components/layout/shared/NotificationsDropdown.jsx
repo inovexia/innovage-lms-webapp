@@ -1,9 +1,6 @@
 'use client'
 
-// React Imports
 import { useRef, useState, useEffect } from 'react'
-
-// MUI Imports
 import IconButton from '@mui/material/IconButton'
 import Badge from '@mui/material/Badge'
 import Popper from '@mui/material/Popper'
@@ -17,22 +14,13 @@ import Divider from '@mui/material/Divider'
 import Avatar from '@mui/material/Avatar'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import Button from '@mui/material/Button'
-
-// Third Party Components
 import classnames from 'classnames'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-
-// Component Imports
 import CustomAvatar from '@core/components/mui/Avatar'
-
-// Config Imports
 import themeConfig from '@configs/themeConfig'
-
-// Hook Imports
 import { useSettings } from '@core/hooks/useSettings'
-
-// Util Imports
 import { getInitials } from '@/utils/getInitials'
+import axios from 'axios'
 
 const ScrollWrapper = ({ children, hidden }) => {
   if (hidden) {
@@ -66,20 +54,13 @@ const getAvatar = params => {
   }
 }
 
-const NotificationDropdown = ({ notifications }) => {
-  // States
+const NotificationDropdown = () => {
   const [open, setOpen] = useState(false)
-  const [notificationsState, setNotificationsState] = useState(notifications)
+  const [notifications, setNotifications] = useState([])
 
-  // Vars
-  const notificationCount = notificationsState.filter(notification => !notification.read).length
-  const readAll = notificationsState.every(notification => notification.read)
-
-  // Refs
   const anchorRef = useRef(null)
   const ref = useRef(null)
 
-  // Hooks
   const hidden = useMediaQuery(theme => theme.breakpoints.down('lg'))
   const isSmallScreen = useMediaQuery(theme => theme.breakpoints.down('sm'))
   const { settings } = useSettings()
@@ -92,46 +73,57 @@ const NotificationDropdown = ({ notifications }) => {
     setOpen(prevOpen => !prevOpen)
   }
 
-  // Read notification when notification is clicked
   const handleReadNotification = (event, value, index) => {
     event.stopPropagation()
-    const newNotifications = [...notificationsState]
-
+    const newNotifications = [...notifications]
     newNotifications[index].read = value
-    setNotificationsState(newNotifications)
+    setNotifications(newNotifications)
   }
 
-  // Remove notification when close icon is clicked
   const handleRemoveNotification = (event, index) => {
     event.stopPropagation()
-    const newNotifications = [...notificationsState]
-
+    const newNotifications = [...notifications]
     newNotifications.splice(index, 1)
-    setNotificationsState(newNotifications)
+    setNotifications(newNotifications)
   }
 
-  // Read or unread all notifications when read all icon is clicked
   const readAllNotifications = () => {
-    const newNotifications = [...notificationsState]
-
-    newNotifications.forEach(notification => {
-      notification.read = !readAll
-    })
-    setNotificationsState(newNotifications)
+    const newNotifications = notifications.map(notification => ({
+      ...notification,
+      read: true
+    }))
+    setNotifications(newNotifications)
   }
 
   useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await axios.get('https://669806b502f3150fb66fd477.mockapi.io/UserList')
+        const fetchedNotifications = response.data.map(notification => ({
+          ...notification,
+          time: new Date(notification.date).toLocaleString(), // Format the date
+          read: false // Default to unread
+        }))
+        setNotifications(fetchedNotifications)
+      } catch (error) {
+        console.error('Error fetching notifications:', error)
+      }
+    }
+
+    fetchNotifications()
+
     const adjustPopoverHeight = () => {
       if (ref.current) {
-        // Calculate available height, subtracting any fixed UI elements' height as necessary
         const availableHeight = window.innerHeight - 100
-
         ref.current.style.height = `${Math.min(availableHeight, 550)}px`
       }
     }
 
     window.addEventListener('resize', adjustPopoverHeight)
   }, [])
+
+  const notificationCount = notifications.filter(notification => !notification.read).length
+  const readAll = notifications.every(notification => notification.read)
 
   return (
     <>
@@ -194,35 +186,24 @@ const NotificationDropdown = ({ notifications }) => {
                         }
                       }}
                     >
-                      {notificationsState.length > 0 ? (
-                        <IconButton size='small' onClick={() => readAllNotifications()} className='text-textPrimary'>
+                      {notifications.length > 0 ? (
+                        <IconButton size='small' onClick={readAllNotifications} className='text-textPrimary'>
                           <i className={classnames(readAll ? 'ri-mail-line' : 'ri-mail-open-line', 'text-xl')} />
                         </IconButton>
-                      ) : (
-                        <></>
-                      )}
+                      ) : null}
                     </Tooltip>
                   </div>
                   <Divider />
                   <ScrollWrapper hidden={hidden}>
-                    {notificationsState.map((notification, index) => {
-                      const {
-                        title,
-                        subtitle,
-                        time,
-                        read,
-                        avatarImage,
-                        avatarIcon,
-                        avatarText,
-                        avatarColor,
-                        avatarSkin
-                      } = notification
+                    {notifications.map((notification, index) => {
+                      const { title, subtitle, time, read, avatarImage, avatarIcon, avatarText, avatarColor, avatarSkin } =
+                        notification
 
                       return (
                         <div
                           key={index}
                           className={classnames('flex plb-3 pli-4 gap-3 cursor-pointer hover:bg-actionHover group', {
-                            'border-be': index !== notificationsState.length - 1
+                            'border-be': index !== notifications.length - 1
                           })}
                           onClick={e => handleReadNotification(e, true, index)}
                         >

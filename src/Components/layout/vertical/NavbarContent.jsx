@@ -56,7 +56,7 @@ const shortcuts = [
 const notifications = [
   {
     avatarImage: '/images/avatars/2.png',
-    title: 'Congratulations Flora 🎉',
+    title: 'Congratulations',
     subtitle: 'Won the monthly bestseller gold badge',
     time: '1h ago',
     read: false

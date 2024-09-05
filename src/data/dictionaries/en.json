@@ -1,5 +1,6 @@
 {
     "navigation": {
+        "viewAllNotification" : "View all Notifications",
         "dashboards": "Dashboards",
         "crm": "CRM",
         "analytics": "Analytics",
