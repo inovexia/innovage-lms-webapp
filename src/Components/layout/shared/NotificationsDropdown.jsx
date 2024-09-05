@@ -21,6 +21,7 @@ import themeConfig from '@configs/themeConfig'
 import { useSettings } from '@core/hooks/useSettings'
 import { getInitials } from '@/utils/getInitials'
 import axios from 'axios'
+import { useRouter } from 'next/navigation'
 
 const ScrollWrapper = ({ children, hidden }) => {
   if (hidden) {
@@ -57,6 +58,8 @@ const getAvatar = params => {
 const NotificationDropdown = () => {
   const [open, setOpen] = useState(false)
   const [notifications, setNotifications] = useState([])
+
+  const router = useRouter()
 
   const anchorRef = useRef(null)
   const ref = useRef(null)
@@ -239,7 +242,7 @@ const NotificationDropdown = () => {
                   </ScrollWrapper>
                   <Divider />
                   <div className='p-4'>
-                    <Button fullWidth variant='contained' size='small'>
+                    <Button fullWidth variant='contained' size='small' onClick={()=>{router.push('/en/notification/notification')}}>
                       View All Notifications
                     </Button>
                   </div>

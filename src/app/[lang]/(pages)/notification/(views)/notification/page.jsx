@@ -2,8 +2,8 @@
 
 // import UserList from '@views/apps/user/list'
 'use client'
-import useUserApi from '../../Api/useUserApi'
-import UserList from '../../components/notification'
+
+import NotificationTable from '../../components/notification/NotificationTable'
 
 // Data Imports
 // import { getUserData, getNewUserData } from '@/app/server/actions'
@@ -25,19 +25,14 @@ import UserList from '../../components/notification'
 //   return res.json()
 // }
 
-const UserListApp = () => {
+const NotificationTableApp = () => {
   // Vars
   // const data = await getUserData()
-  const { addUsersData, updateUsersData, deleteUserData, data } = useUserApi()
+
 
   return (
-    <UserList
-      userData={data}
-      addUsersData={addUsersData}
-      updateUsersData={updateUsersData}
-      deleteUserData={deleteUserData}
-    />
+    <NotificationTable/>
   )
 }
 
-export default UserListApp
+export default NotificationTableApp
