@@ -23,6 +23,7 @@ import menuItemStyles from '@core/styles/vertical/menuItemStyles'
 import menuSectionStyles from '@core/styles/vertical/menuSectionStyles'
 import { TestRouting } from '@/app/[lang]/(pages)/test/routing'
 import { UserRouting } from '@/app/[lang]/(pages)/user/routing'
+import { LogsRouting } from '@/app/[lang]/(pages)/logs/routing'
 
 const RenderExpandIcon = ({ open, transitionDuration }) => (
   <StyledVerticalNavExpandIcon open={open} transitionDuration={transitionDuration}>
@@ -172,6 +173,8 @@ const VerticalMenu = ({ dictionary, scrollMenu }) => {
           </SubMenu> */}
         <TestRouting dictionary={dictionary} locale={locale} />
         <UserRouting dictionary={dictionary} locale={locale} />
+        <LogsRouting dictionary={dictionary} locale={locale} />
+
         {/* <SubMenu label={dictionary['navigation'].user} icon={<i className='ri-user-line' />}>
           <MenuItem href={`/${locale}/apps/user/list`}>{dictionary['navigation'].list}</MenuItem>
           <MenuItem href={`/${locale}/apps/user/view`}>{dictionary['navigation'].view}</MenuItem>
