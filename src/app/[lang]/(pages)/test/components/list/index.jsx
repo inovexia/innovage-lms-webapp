@@ -2,7 +2,7 @@
 import Grid from '@mui/material/Grid'
 
 // Component Imports
-import UserListTable from './UserListTable'
+import TestListTable from './TestListTable'
 import UserListCards from './UserListCards'
 
 const UserList = ({ userData, addUsersData, updateUsersData, deleteUserData }) => {
@@ -12,7 +12,7 @@ const UserList = ({ userData, addUsersData, updateUsersData, deleteUserData }) =
         <UserListCards />
       </Grid> */}
       <Grid item xs={12}>
-        <UserListTable
+        <TestListTable
           tableData={userData}
           addUserData={addUsersData}
           updateUserData={updateUsersData}

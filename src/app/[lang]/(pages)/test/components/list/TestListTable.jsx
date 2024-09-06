@@ -10,8 +10,8 @@ import { useParams } from 'next/navigation'
 // MUI Imports
 import Card from '@mui/material/Card'
 import CardHeader from '@mui/material/CardHeader'
-import Divider from '@mui/material/Divider'
 import Button from '@mui/material/Button'
+import Grid from '@mui/material/Grid'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
@@ -37,9 +37,12 @@ import {
 } from '@tanstack/react-table'
 
 // Component Imports
+import { Box, Tooltip } from '@mui/material'
+
 import TableFilters from './TableFilters'
-import AddUserDrawer from './AddUserDrawer'
+import AddTestDrawer from './AddTestDrawer'
 import OptionMenu from '@core/components/option-menu'
+import TestOptionMenu from '@core/components/test-menu'
 import CustomAvatar from '@core/components/mui/Avatar'
 
 // Util Imports
@@ -94,15 +97,16 @@ const userRoleObj = {
 }
 
 const userStatusObj = {
-  active: 'success',
-  pending: 'warning',
-  inactive: 'secondary'
+  Published: 'success',
+  Unpublished: 'warning'
+
+  // Unpublished: 'secondary'
 }
 
 // Column Definitions
 const columnHelper = createColumnHelper()
 
-const UserListTable = ({ tableData, addUserData, updateUserData, deleteUserData }) => {
+const TestListTable = ({ tableData, addUserData, updateUserData, deleteUserData }) => {
   // States
   const [addUserOpen, setAddUserOpen] = useState(false)
   const [editUserOpen, setEditUserOpen] = useState(false)
@@ -111,6 +115,8 @@ const UserListTable = ({ tableData, addUserData, updateUserData, deleteUserData 
   const [editData, setEditData] = useState()
   const [filteredData, setFilteredData] = useState(data)
   const [globalFilter, setGlobalFilter] = useState('')
+  const [type, setType] = useState('')
+  const [status, setStatus] = useState('')
 
   console.info(editData)
 
@@ -145,43 +151,43 @@ const UserListTable = ({ tableData, addUserData, updateUserData, deleteUserData 
           />
         )
       },
-      columnHelper.accessor('fullName', {
-        header: 'User',
+      columnHelper.accessor('title', {
+        header: 'Test Name',
         cell: ({ row }) => (
           <div className='flex items-center gap-3'>
-            {getAvatar({ avatar: row.original.avatar, fullName: row.original.fullName })}
             <div className='flex flex-col'>
               <Typography color='text.primary' className='font-medium'>
-                {row.original.fullName}
+                {row.original.title}
               </Typography>
-              <Typography variant='body2'>{row.original.username}</Typography>
+              {/* <Typography variant='body2'>{row.original.username}</Typography> */}
             </div>
           </div>
         )
       }),
-      columnHelper.accessor('email', {
-        header: 'Email',
-        cell: ({ row }) => <Typography>{row.original.email}</Typography>
+      columnHelper.accessor('created_by', {
+        header: 'Administrator',
+        cell: ({ row }) => <Typography>Saiful Haque</Typography>
       }),
-      columnHelper.accessor('role', {
-        header: 'Role',
-        cell: ({ row }) => (
-          <div className='flex items-center gap-2'>
-            <Icon
-              className={classnames('text-[22px]', userRoleObj[row.original.role]?.icon)}
-              sx={{ color: `var(--mui-palette-${userRoleObj[row.original.role]?.color}-main)` }}
-            />
-            <Typography className='capitalize' color='text.primary'>
-              {row.original.role}
-            </Typography>
-          </div>
-        )
+      columnHelper.accessor('created_by', {
+        header: 'Creator',
+        cell: ({ row }) => <Typography>{row.original.created_by}</Typography>
       }),
-      columnHelper.accessor('currentPlan', {
-        header: 'Plan',
+
+      // columnHelper.accessor('created_on', {
+      //   header: 'Date of Creation',
+      //   cell: ({ row }) => (
+      //     <div className='flex items-center gap-2'>
+      //       <Typography className='capitalize' color='text.primary'>
+      //         {row.original.created_on}
+      //       </Typography>
+      //     </div>
+      //   )
+      // }),
+      columnHelper.accessor('type', {
+        header: 'Type',
         cell: ({ row }) => (
           <Typography className='capitalize' color='text.primary'>
-            {row.original.currentPlan}
+            {row.original.type}
           </Typography>
         )
       }),
@@ -191,9 +197,9 @@ const UserListTable = ({ tableData, addUserData, updateUserData, deleteUserData 
           <div className='flex items-center gap-3'>
             <Chip
               variant='tonal'
-              label={row.original.status}
+              label={row?.original?.status === '1' ? 'Published' : 'Unpublished'}
               size='small'
-              color={userStatusObj[row.original.status]}
+              color={userStatusObj[row?.original?.status === '1' ? 'Published' : 'Unpublished']}
               className='capitalize'
             />
           </div>
@@ -206,7 +212,7 @@ const UserListTable = ({ tableData, addUserData, updateUserData, deleteUserData 
             <IconButton
               size='small'
               onClick={() => {
-                deleteUserData(row?.original?.id)
+                deleteUserData(row?.original?.guid)
               }}
             >
               <i className='ri-delete-bin-7-line text-textSecondary' />
@@ -218,9 +224,7 @@ const UserListTable = ({ tableData, addUserData, updateUserData, deleteUserData 
             </IconButton>
             <OptionMenu
               iconClassName='text-textSecondary'
-              setEditUserOpen={setEditUserOpen}
               data={row}
-              setEditData={setEditData}
               options={[
                 {
                   text: 'Download',
@@ -270,6 +274,8 @@ const UserListTable = ({ tableData, addUserData, updateUserData, deleteUserData 
     getFacetedMinMaxValues: getFacetedMinMaxValues()
   })
 
+  console.info(Object.keys(rowSelection)?.length)
+
   const getAvatar = params => {
     const { avatar, fullName } = params
 
@@ -284,21 +290,156 @@ const UserListTable = ({ tableData, addUserData, updateUserData, deleteUserData 
     }
   }
 
+  const CustomTooltip = styled(Tooltip)`
+    background-color: #1976d2; /* Change background color */
+    color: #ffffff; /* Change text color */
+  `
+
   return (
     <>
       <Card>
-        <CardHeader title='Filters' className='pbe-4' />
-        <TableFilters setData={setFilteredData} tableData={data} />
-        <Divider />
-        <div className='flex justify-between gap-4 p-5 flex-col items-start sm:flex-row sm:items-center'>
-          <Button
-            color='secondary'
-            variant='outlined'
-            startIcon={<i className='ri-upload-2-line' />}
-            className='max-sm:is-full'
-          >
-            Export
-          </Button>
+        <Grid container item xs={12} display='flex' alignItems='center'>
+          <Grid item xs={12}>
+            <CardHeader title='Filters' className='pbe-4' />
+          </Grid>
+          <Grid item xs={12}>
+            <TableFilters
+              setData={setFilteredData}
+              tableData={data}
+              globalFilter={globalFilter}
+              setGlobalFilter={setGlobalFilter}
+              type={type}
+              setType={setType}
+              status={status}
+              setStatus={setStatus}
+            />
+          </Grid>
+        </Grid>
+        <Grid container item xs={12} pl={5}>
+          <Grid item xs={0.9}>
+            <Box display='flex' justifyContent='space-between' alignItems='center'>
+              <IconButton
+                disableRipple
+                disabled={!Object.keys(rowSelection)?.length}
+                sx={{
+                  border: `1px solid ${Object.keys(rowSelection)?.length ? '#808080' : '#E7E7E7'}`,
+                  borderRadius: 0
+                }}
+              >
+                {/* <CustomTooltip title='Add' arrow> */}
+                <i
+                  class='ri-delete-bin-6-fill'
+                  color={Object.keys(rowSelection)?.length ? '#B5B8FA' : '#808080'}
+                  style={{
+                    width: 20,
+                    height: 20,
+                    ...(Object.keys(rowSelection)?.length
+                      ? {
+                          color: '#B5B8FA'
+                        }
+                      : { color: '#808080' })
+                  }}
+                ></i>
+                {/* </CustomTooltip> */}
+              </IconButton>
+
+              <TestOptionMenu
+                iconClassName='text-textSecondary'
+                // setEditFilterOpen={setEditFilterOpen}
+                // data={row}
+                // setEditData={setEditData}
+                rowSelection={rowSelection}
+                options={[
+                  {
+                    text: 'Test Name'
+                  },
+                  {
+                    text: 'Start Date'
+                  },
+                  {
+                    text: 'End Date'
+                  },
+                  {
+                    text: 'Type'
+                  },
+                  {
+                    text: 'Status'
+                  }
+                ]}
+              />
+            </Box>
+          </Grid>
+          <Grid container pr={8} item xs={11} spacing={3} display='flex' alignItems='center' justifyContent='flex-end'>
+            {/* <Grid item xs={2}>
+              <Button
+                size='large'
+                color='secondary'
+                fullWidth
+                variant='outlined'
+                startIcon={<i className='ri-upload-2-line' />}
+                className='max-sm:is-full'
+              >
+                Export
+              </Button>
+            </Grid>
+            <Grid item xs={2}>
+              <Button
+                size='large'
+                fullWidth
+                color='secondary'
+                variant='outlined'
+                startIcon={<i className='ri-upload-2-line' />}
+                className='max-sm:is-full'
+              >
+                Export
+              </Button>
+            </Grid> */}
+            <Grid item xs={3.5}>
+              <Button
+                // size='large'
+                color='secondary'
+                fullWidth
+                variant='outlined'
+                onClick={() => {}}
+                startIcon={
+                  <i
+                    class='ri-settings-2-line'
+                    style={{
+                      width: 21.8,
+                      height: 21.8
+                    }}
+                  />
+                }
+
+                // className='max-sm:is-full'
+              >
+                Manage Question Templates
+              </Button>
+            </Grid>
+            <Grid item xs={2.5}>
+              <Button
+                // size='large'
+                fullWidth
+                variant='contained'
+                onClick={() => setAddUserOpen(!addUserOpen)}
+                className='max-sm:is-full'
+                startIcon={
+                  <i
+                    class='ri-add-fill'
+                    style={{
+                      width: 21.6,
+                      height: 21.6
+                    }}
+                  />
+                }
+              >
+                Add New Test
+              </Button>
+            </Grid>
+          </Grid>
+        </Grid>
+
+        {/* <div className='flex justify-between gap-4 p-5 flex-col items-start sm:flex-row sm:items-center'>
           <div className='flex items-center gap-x-4 max-sm:gap-y-4 flex-col max-sm:is-full sm:flex-row'>
             <DebouncedInput
               value={globalFilter ?? ''}
@@ -310,8 +451,8 @@ const UserListTable = ({ tableData, addUserData, updateUserData, deleteUserData 
               Add New User
             </Button>
           </div>
-        </div>
-        <div className='overflow-x-auto'>
+        </div> */}
+        <div className='overflow-x-auto pt-5'>
           <table className={tableStyles.table}>
             <thead>
               {table.getHeaderGroups().map(headerGroup => (
@@ -382,7 +523,7 @@ const UserListTable = ({ tableData, addUserData, updateUserData, deleteUserData 
           onRowsPerPageChange={e => table.setPageSize(Number(e.target.value))}
         />
       </Card>
-      <AddUserDrawer
+      <AddTestDrawer
         open={addUserOpen}
         handleClose={() => setAddUserOpen(!addUserOpen)}
         userData={data}
@@ -390,8 +531,9 @@ const UserListTable = ({ tableData, addUserData, updateUserData, deleteUserData 
         edit={false}
         updateUserData={updateUserData}
         addUserData={addUserData}
+        addUserData={addUserData}
       />
-      <AddUserDrawer
+      <AddTestDrawer
         open={editUserOpen}
         handleClose={() => setEditUserOpen(false)}
         userData={editData ?? []}
@@ -404,4 +546,4 @@ const UserListTable = ({ tableData, addUserData, updateUserData, deleteUserData 
   )
 }
 
-export default UserListTable
+export default TestListTable
