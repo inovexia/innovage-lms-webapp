@@ -1,94 +1,159 @@
-// React Imports
 import { useState, useEffect } from 'react'
-
-// MUI Imports
 import CardContent from '@mui/material/CardContent'
 import FormControl from '@mui/material/FormControl'
 import Grid from '@mui/material/Grid'
 import InputLabel from '@mui/material/InputLabel'
 import MenuItem from '@mui/material/MenuItem'
 import Select from '@mui/material/Select'
+import TextField from '@mui/material/TextField'
+import Checkbox from '@mui/material/Checkbox'
+import ListItemText from '@mui/material/ListItemText'
+import { CardHeader, Typography } from '@mui/material'
+
+const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...props }) => {
+  const [value, setValue] = useState(initialValue)
+
+  useEffect(() => {
+    setValue(initialValue)
+  }, [initialValue])
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      onChange(value)
+    }, debounce)
+
+    return () => clearTimeout(timeout)
+  }, [value, onChange, debounce])
+
+  return <TextField {...props} value={value} onChange={e => setValue(e.target.value)} size='small' />
+}
 
 const TableFilters = ({ setData, tableData }) => {
-  // States
-  const [role, setRole] = useState('')
-  const [plan, setPlan] = useState('')
-  const [status, setStatus] = useState('')
+  const [roles, setRoles] = useState([])
+  const [statuses, setStatuses] = useState([])
+  const [globalFilter, setGlobalFilter] = useState('')
+
+  const roleOptions = ['admin', 'teacher', 'student']
+  const statusOptions = ['pending', 'active', 'inactive']
 
   useEffect(() => {
     const filteredData = tableData?.filter(user => {
-      if (role && user.role !== role) return false
-      if (plan && user.currentPlan !== plan) return false
-      if (status && user.status !== status) return false
-
+      if (roles.length > 0 && !roles.includes(user.role)) return false
+      if (statuses.length > 0 && !statuses.includes(user.status)) return false
+      if (globalFilter && !user.first_name.toLowerCase().includes(globalFilter.toLowerCase())) return false
       return true
     })
 
-    setData(filteredData || [])
-  }, [role, plan, status, tableData, setData])
+    setData(filteredData)
+  }, [roles, statuses, globalFilter, tableData, setData])
+
+  const handleRoleChange = event => {
+    const {
+      target: { value }
+    } = event
+    setRoles(typeof value === 'string' ? value.split(',') : value)
+  }
+
+  const handleStatusChange = event => {
+    const {
+      target: { value }
+    } = event
+    setStatuses(typeof value === 'string' ? value.split(',') : value)
+  }
+
+  const handleReset = () => {
+    setRoles([])
+    setStatuses([])
+    setGlobalFilter('')
+  }
 
   return (
-    <CardContent>
-      <Grid container spacing={5}>
-        <Grid item xs={12} sm={4}>
-          <FormControl fullWidth>
-            <InputLabel id='role-select'>Select Role</InputLabel>
+    <CardContent style={{ paddingBottom: '5px' }}>
+      <Grid container spacing={5} alignItems='center'>
+        <Grid item xs={12} sm={12}>
+          <FormControl fullWidth sx={{ marginBottom: '10px' }}>
+            <CardHeader title='Filter' />
+          </FormControl>
+        </Grid>
+        <Grid item xs={3} sm={3}>
+          <FormControl fullWidth sx={{ paddingLeft: '15px' }}>
+            <DebouncedInput
+              value={globalFilter ?? ''}
+              onChange={value => setGlobalFilter(String(value))}
+              placeholder='Search User'
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={3} sm={3}>
+          <FormControl
+            fullWidth
+            sx={{
+              '& .MuiInputBase-root': {
+                height: '40px',
+                minHeight: 'auto'
+              },
+              '& .MuiInputLabel-root': {
+                top: '-5px'
+              }
+            }}
+          >
+            <InputLabel id='role-select-label'>Select Role</InputLabel>
             <Select
-              fullWidth
+              labelId='role-select-label'
               id='select-role'
-              value={role}
-              onChange={e => setRole(e.target.value)}
-              label='Select Role'
-              labelId='role-select'
-              inputProps={{ placeholder: 'Select Role' }}
+              multiple
+              value={roles}
+              onChange={handleRoleChange}
+              renderValue={selected => selected.join(', ')}
             >
-              <MenuItem value=''>Select Role</MenuItem>
-              <MenuItem value='admin'>Admin</MenuItem>
-              <MenuItem value='author'>Author</MenuItem>
-              <MenuItem value='editor'>Editor</MenuItem>
-              <MenuItem value='maintainer'>Maintainer</MenuItem>
-              <MenuItem value='subscriber'>Subscriber</MenuItem>
+              {roleOptions.map(role => (
+                <MenuItem key={role} value={role}>
+                  <Checkbox checked={roles.indexOf(role) > -1} />
+                  <ListItemText primary={role.charAt(0).toUpperCase() + role.slice(1)} />
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         </Grid>
-        <Grid item xs={12} sm={4}>
-          <FormControl fullWidth>
-            <InputLabel id='plan-select'>Select Plan</InputLabel>
+        <Grid item xs={3} sm={3}>
+          <FormControl
+            fullWidth
+            sx={{
+              '& .MuiInputBase-root': {
+                height: '40px',
+                minHeight: 'auto'
+              },
+              '& .MuiInputLabel-root': {
+                top: '-5px'
+              }
+            }}
+          >
+            <InputLabel id='status-select-label'>Select Status</InputLabel>
             <Select
-              fullWidth
-              id='select-plan'
-              value={plan}
-              onChange={e => setPlan(e.target.value)}
-              label='Select Plan'
-              labelId='plan-select'
-              inputProps={{ placeholder: 'Select Plan' }}
-            >
-              <MenuItem value=''>Select Plan</MenuItem>
-              <MenuItem value='basic'>Basic</MenuItem>
-              <MenuItem value='company'>Company</MenuItem>
-              <MenuItem value='enterprise'>Enterprise</MenuItem>
-              <MenuItem value='team'>Team</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <FormControl fullWidth>
-            <InputLabel id='status-select'>Select Status</InputLabel>
-            <Select
-              fullWidth
+              labelId='status-select-label'
               id='select-status'
-              label='Select Status'
-              value={status}
-              onChange={e => setStatus(e.target.value)}
-              labelId='status-select'
-              inputProps={{ placeholder: 'Select Status' }}
+              multiple
+              value={statuses}
+              onChange={handleStatusChange}
+              renderValue={selected => selected.join(', ')}
             >
-              <MenuItem value=''>Select Status</MenuItem>
-              <MenuItem value='pending'>Pending</MenuItem>
-              <MenuItem value='active'>Active</MenuItem>
-              <MenuItem value='inactive'>Inactive</MenuItem>
+              {statusOptions.map(status => (
+                <MenuItem key={status} value={status}>
+                  <Checkbox checked={statuses.indexOf(status) > -1} />
+                  <ListItemText primary={status.charAt(0).toUpperCase() + status.slice(1)} />
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
+        </Grid>
+        <Grid item xs={1} sm={1}></Grid>
+        <Grid item xs={2} sm={2}>
+          <Typography
+            style={{ color: '#FF4D49', textDecoration: 'underline', cursor: 'pointer' }}
+            onClick={handleReset}
+          >
+            Reset Filter
+          </Typography>
         </Grid>
       </Grid>
     </CardContent>
