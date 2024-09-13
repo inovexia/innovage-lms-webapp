@@ -23,7 +23,7 @@
   color: #333;
 }
 
-.filter-field input[type='checkbox'] {
+.filter-field option[type='checkbox'] {
   accent-color: #007aff; /* Customize checkbox color */
   transform: scale(1.2); /* Scale checkbox size */
 }

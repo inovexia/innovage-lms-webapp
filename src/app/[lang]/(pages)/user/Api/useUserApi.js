@@ -1,6 +1,6 @@
-// 'use client'
+'use client'
 import { useEffect, useState } from 'react'
-import { ApiRequestHandle } from '@/libs/axios'
+
 import axios from 'axios'
 
 import { USER_MODULE_ENDPOINTS } from '../Const/ApiEndpoints'

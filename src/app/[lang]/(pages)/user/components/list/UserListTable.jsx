@@ -15,6 +15,7 @@ import Card from '@mui/material/Card'
 import CardHeader from '@mui/material/CardHeader'
 import Divider from '@mui/material/Divider'
 import Button from '@mui/material/Button'
+import { Menu, MenuItem } from '@mui/material';
 
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
@@ -27,7 +28,7 @@ import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import DialogContentText from '@mui/material/DialogContentText'
 import DialogTitle from '@mui/material/DialogTitle'
-
+import useDraggableList from './useDraggableList';
 import { rankItem } from '@tanstack/match-sorter-utils'
 import {
   createColumnHelper,
@@ -51,7 +52,7 @@ import CustomAvatar from '@core/components/mui/Avatar'
 import { getInitials } from '@/Utils/getInitials'
 import { getLocalizedUrl } from '@/Utils/i18n'
 import '../../style/styles.css'
-
+import { useRouter } from 'next/navigation'
 import tableStyles from '@core/styles/table.module.css'
 
 // Styled Components
@@ -78,12 +79,16 @@ const userStatusObj = {
   inactive: 'secondary'
 }
 
+
+
+
 // Column Definitions
 const columnHelper = createColumnHelper()
 
 const UserListTable = ({ tableData }) => {
   // const router = useRouter()
   // States
+  const router = useRouter()
   const [selectedUser, setSelectedUser] = useState(null) // Track the selected user
   const [selectedStatus, setSelectedStatus] = useState('') // Track the status in the select dropdown
 
@@ -100,7 +105,7 @@ const UserListTable = ({ tableData }) => {
   }
   const [selectedRole, setSelectedRole] = useState('') // Track the status in the select dropdown
   const [openRoleDialog, setOpenRoleDialog] = useState(false) // Track dialog open/close
-  const RoleOptions = ['admin', 'student', 'teavher'] // Define status options
+  const RoleOptions = ['admin', 'student', 'teacher'] // Define status options
 
   // Function to open dialog and initialize the selected user's status
   const handleOpenRoleDialog = user => {
@@ -127,20 +132,28 @@ const UserListTable = ({ tableData }) => {
     role: true,
     status: true,
     phone: false
-  }) //showing rows
-  const [columnOrder, setColumnOrder] = useState(['select', 'user', 'email', 'role', 'status', 'phone', 'action'])
+  })
+
+
+  //showing rows
+
+
+  const initialColumns = ['select', 'user', 'email', 'role', 'status', 'phone', 'action'];
   const [open, setOpen] = useState(false) // State for delete confirmation dialog
   const [userToDelete, setUserToDelete] = useState(null) // State for the user s
   const [newStatus, setNewStatus] = useState('')
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
   const [openStatusDialog, setOpenStatusDialog] = useState(false)
-
+  const [anchorEl, setAnchorEl] = useState(null);
   const roleOptions = ['admin', 'user', 'student']
 
   const handleCloseDeleteDialog = () => setOpenDeleteDialog(false)
 
   const handleChangeStatus = event => setSelectedStatus(event.target.value)
   const handleChangeRole = event => setSelectedRole(event.target.value)
+
+  const { items: columnOrder, handleDragOver, handleDrop, handleDragStart } = useDraggableList(initialColumns);
+
 
   const handleDeleteConfirm = () => {
     // Delete logic here
@@ -232,10 +245,12 @@ const UserListTable = ({ tableData }) => {
   }
 
   const handleDeleteClick = (event, userId) => {
-    event.stopPropagation() // Prevent row click propagation
-    setUserToDelete(userId)
-    setOpen(true)
-  }
+    event.stopPropagation(); // Prevent row click propagation
+    if (isAnyRowSelected) {
+      setUserToDelete(userId);
+      setOpen(true);
+    }
+  };
 
   const handleCancelDelete = () => {
     setUserToDelete(null)
@@ -243,144 +258,179 @@ const UserListTable = ({ tableData }) => {
   }
 
   const handleConfirmDelete = () => {
-    setData(data?.filter(product => product.id !== userToDelete))
-    setUserToDelete(null)
-    setOpen(false)
-  }
+    if (isAnyRowSelected) {
+      setData(data.filter(product => !rowSelection[product.id])); // Assuming rowSelection holds selected rows
+      setUserToDelete(null);
+      setOpen(false);
+    }
+  };
+
+  const handleExportClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseExportMenu = () => {
+    setAnchorEl(null);
+  };
+
+  // Export logic
+  const handleExportAll = () => {
+    // Logic for exporting all users
+    console.log('Exporting all users');
+    handleCloseExportMenu();
+  };
+
+  const handleExportSelected = () => {
+    // Logic for exporting selected users
+    const selectedUserIds = Object.keys(rowSelection);
+    console.log('Exporting selected users:', selectedUserIds);
+    handleCloseExportMenu();
+  };
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleColumnToggle = (column) => {
+    setVisibleColumns(prev => ({ ...prev, [column]: !prev[column] }));
+    handleClose();
+  };
+
+
+
 
   const columns = useMemo(
-    () =>
-      columnOrder
-        .map(columnId => {
-          switch (columnId) {
-            case 'select':
-              return visibleColumns.user
-                ? {
-                    id: 'select',
-                    header: ({ table }) => (
-                      <Checkbox
-                        {...{
-                          checked: table.getIsAllRowsSelected(),
-                          indeterminate: table.getIsSomeRowsSelected(),
-                          onChange: table.getToggleAllRowsSelectedHandler()
-                        }}
-                      />
-                    ),
-                    cell: ({ row }) => (
-                      <Checkbox
-                        {...{
-                          checked: row.getIsSelected(),
-                          disabled: !row.getCanSelect(),
-                          indeterminate: row.getIsSomeSelected(),
-                          onChange: row.getToggleSelectedHandler()
-                        }}
-                        onClick={e => e.stopPropagation()}
-                      />
-                    )
-                  }
-                : null
-            case 'user':
-              return visibleColumns.user
-                ? columnHelper.accessor('fullName', {
-                    header: 'User',
-                    cell: ({ row }) => (
-                      <div className='flex items-center gap-3'>
-                        {getAvatar({ avatar: row.original.avatar, fullName: row.original.fullName })}
-                        <div className='flex flex-col'>
-                          <Typography color='text.primary' className='font-medium'>
-                            {row.original.fullName}
-                          </Typography>
-                          <Typography variant='body2'>{row.original.username}</Typography>
-                        </div>
+    () => columnOrder
+      .map(columnId => {
+        switch (columnId) {
+          case 'select':
+            return visibleColumns.user
+              ? {
+                  id: 'select',
+                  header: ({ table }) => (
+                    <Checkbox
+                      {...{
+                        checked: table.getIsAllRowsSelected(),
+                        indeterminate: table.getIsSomeRowsSelected(),
+                        onChange: table.getToggleAllRowsSelectedHandler()
+                      }}
+                    />
+                  ),
+                  cell: ({ row }) => (
+                    <Checkbox
+                      {...{
+                        checked: row.getIsSelected(),
+                        disabled: !row.getCanSelect(),
+                        indeterminate: row.getIsSomeSelected(),
+                        onChange: row.getToggleSelectedHandler()
+                      }}
+                      onClick={e => e.stopPropagation()}
+                    />
+                  )
+                }
+              : null
+          case 'user':
+            return visibleColumns.user
+              ? columnHelper.accessor('fullName', {
+                  header: 'User',
+                  cell: ({ row }) => (
+                    <div className='flex items-center gap-3'>
+                      {getAvatar({ avatar: row.original.avatar, fullName: row.original.fullName })}
+                      <div className='flex flex-col'>
+                        <Typography color='text.primary' className='font-medium'>
+                          {row.original.fullName}
+                        </Typography>
+                        <Typography variant='body2'>{row.original.username}</Typography>
                       </div>
-                    )
-                  })
-                : null
-            case 'email':
-              return visibleColumns.email
-                ? columnHelper.accessor('email', {
-                    header: 'Email',
-                    cell: ({ row }) => <Typography>{row.original.email}</Typography>
-                  })
-                : null
-            case 'role':
-              return visibleColumns.role
-                ? columnHelper.accessor('role', {
-                    header: 'Role',
-                    cell: ({ row }) => (
-                      <div className='flex items-center gap-2'>
-                        <Icon
-                        // className={classnames('text-[22px]', userRoleObj[row.original.role].icon)}
-                        // color={userRoleObj[row.original.role].color}
-                        />
-                        <Typography>{row.original.role}</Typography>
-                      </div>
-                    )
-                  })
-                : null
-            case 'status':
-              return visibleColumns.status
-                ? columnHelper.accessor('status', {
-                    header: 'Status',
-                    cell: ({ row }) => (
-                      <Chip
-                        size='small'
-                        label={row.original.status}
-                        color={userStatusObj[row.original.status]}
-                        variant='outlined'
-                        sx={{ textTransform: 'capitalize' }}
-                      />
-                    )
-                  })
-                : null
-            case 'phone':
-              return visibleColumns.phone
-                ? columnHelper.accessor('phone', {
-                    header: 'Phone',
-                    cell: ({ row }) => <Typography>{row.original.mobile}</Typography>
-                  })
-                : null
-            case 'action':
-              return {
-                id: 'action',
-                header: 'Action',
-                cell: ({ row }) => (
-                  <div className='flex items-center gap-0.5'>
-                    <IconButton size='small'>
-                      <Link href={getLocalizedUrl('/apps/user/view', locale)} className='flex'>
-                        <i className='ri-eye-line text-textSecondary' />
-                      </Link>
-                    </IconButton>
-                    <div onClick={e => e.stopPropagation()}>
-                      <OptionMenu
-                        iconClassName='text-textSecondary'
-                        options={[
-                          {
-                            text: 'Edit'
-                          },
-                          {
-                            text: 'Delete'
-                          },
-                          {
-                            text: 'Activate'
-                          },
-                          {
-                            text: 'Deactivate'
-                          }
-                        ]}
-                        onClick={e => e.stopPropagation()}
-                      />
                     </div>
-                  </div>
-                )
-              }
-            default:
-              return null
-          }
-        })
-        .filter(Boolean),
+                  )
+                })
+              : null
+          case 'email':
+            return visibleColumns.email
+              ? columnHelper.accessor('email', {
+                  header: 'Email',
+                  cell: ({ row }) => <Typography>{row.original.email}</Typography>
+                })
+              : null
+          case 'role':
+            return visibleColumns.role
+              ? columnHelper.accessor('role', {
+                  header: 'Role',
+                  cell: ({ row }) => (
+                    <div className='flex items-center gap-2'>
+                      <Icon />
+                      <Typography>{row.original.role}</Typography>
+                    </div>
+                  )
+                })
+              : null
+          case 'status':
+            return visibleColumns.status
+              ? columnHelper.accessor('status', {
+                  header: 'Status',
+                  cell: ({ row }) => (
+                    <Chip
+                      size='small'
+                      label={getStatusLabel(row.original.status)}
+                      color={userStatusObj[getStatusLabel(row.original.status).toLowerCase()]}
+                      variant='outlined'
+                      sx={{ textTransform: 'capitalize' }}
+                    />
+                  )
+                })
+              : null
+          case 'phone':
+            return visibleColumns.phone
+              ? columnHelper.accessor('phone', {
+                  header: 'Phone',
+                  cell: ({ row }) => <Typography>{row.original.mobile}</Typography>
+                })
+              : null
+              case 'action':
+                return {
+                  id: 'action',
+                  header: 'Action',
+                  cell: ({ row }) => (
+                    <div className='flex items-center gap-0.5'>
+
+
+
+                      <div onClick={e => e.stopPropagation()}>
+                        <OptionMenu
+                          iconClassName='text-textSecondary'
+                          options={[
+                            { text: 'Edit' },
+                            {
+                              text: 'View', // Add the View option
+                              onClick: () => {
+                                const userId = row.original.id; // Assuming `id` is the unique user identifier
+                                const userViewUrl = getLocalizedUrl(`/apps/user/view?id=${userId}`, locale); // Create the URL
+                                window.location.href = userViewUrl; // Redirect to the user view page
+                              }
+                            },
+                            { text: 'Delete' },
+                            { text: 'Activate' },
+                            { text: 'Deactivate' }
+                          ]}
+                          onClick={e => e.stopPropagation()}
+                        />
+                      </div>
+                    </div>
+              )
+            }
+          default:
+            return null
+        }
+      })
+      .filter(Boolean),
     [columnOrder, visibleColumns, data]
   )
+
 
   const getAvatar = ({ avatar, fullName }) => {
     if (avatar) {
@@ -396,7 +446,7 @@ const UserListTable = ({ tableData }) => {
 
   // Table
   const table = useReactTable({
-    data,
+    data: filteredData, // <-- Use filteredData here
     columns,
     state: {
       rowSelection,
@@ -411,24 +461,32 @@ const UserListTable = ({ tableData }) => {
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    globalFilterFn: fuzzyFilter,
-    onRowSelectionChange: setRowSelection,
-    getCoreRowModel: getCoreRowModel(),
-    onGlobalFilterChange: setGlobalFilter,
-    getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues(),
     debugTable: true
-  })
+  });
+
   const isAnyRowSelected = Object.keys(rowSelection).length > 0
   const calculateNewIndex = (xPosition, fromIndex) => {
     const columnWidth = 100 // Approximate width of each column, adjust as necessary
     const toIndex = Math.floor(xPosition / columnWidth)
     return Math.max(0, Math.min(toIndex, columnOrder.length - 1))
   }
+
+  const getStatusLabel = (status) => {
+    if (status === 1) {
+      return 'Active';
+    } else if (status === 0) {
+      return 'Inactive';
+    } else if (status === null || status === undefined) {
+      return 'Pending'; // Handle both null and undefined cases
+    }
+    return 'Pending'; // Fallback for any unknown cases
+  };
+
+
+
   return (
     <Card>
       <TableFilters setData={setFilteredData} tableData={data} />
@@ -438,17 +496,21 @@ const UserListTable = ({ tableData }) => {
           className='flex items-center gap-x-4 max-sm:gap-y-4 flex-col max-sm:is-full sm:flex-row'
           style={{ paddingLeft: '25px' }}
         >
-          <Button
-            color='secondary'
-            onClick={e => handleDeleteClick(e, 1)}
-            style={{ color: '#FFFFFF', border: '1px solid #E7E7E7', minWidth: '40px', paddingLeft: '16px' }}
-          >
-            <i
-              className='ri-delete-bin-6-line'
-              style={{ color: isAnyRowSelected ? '#007AFF' : '#8080808C' }}
-              onClick={e => handleDeleteClick(e, 1)}
-            />
-          </Button>
+<Button
+  color='secondary'
+  onClick={e => handleDeleteClick(e, 1)}
+  style={{
+    color: isAnyRowSelected ? '#FFFFFF' : '#8080808C', // Change text color based on selection
+    border: isAnyRowSelected ? '1px solid #E7E7E7' : '1px solid #E7E7E7',
+    minWidth: '40px',
+    paddingLeft: '16px',
+    cursor: isAnyRowSelected ? 'pointer' : 'not-allowed', // Change cursor based on selection
+    opacity: isAnyRowSelected ? 1 : 0.5 // Change opacity based on selection
+  }}
+  disabled={!isAnyRowSelected} // Disable the button if no rows are selected
+>
+  <i className='ri-delete-bin-6-line' style={{ color: isAnyRowSelected ? '#007AFF' : '#8080808C' }} />
+</Button>
           <Button
             color='secondary'
             style={{ color: '#FFFFFF', border: '1px solid #E7E7E7', minWidth: '40px', paddingLeft: '16px' }}
@@ -468,13 +530,13 @@ const UserListTable = ({ tableData }) => {
           {showFilter && <FilterDropdown />}
         </div>
         <div className='flex items-center gap-x-4 max-sm:gap-y-4 flex-col max-sm:is-full sm:flex-row'>
-          <Button
+        <Button
             color='secondary'
+            onClick={handleExportClick} // Handle export menu click
             style={{
               color: isAnyRowSelected ? '#6D788D' : '#8080808C',
               border: isAnyRowSelected ? '1px solid #6D788D' : '1px solid #8080808C'
             }}
-            // style={{ color: '#8080808C', border: '1px solid #8080808C' }}
             variant='outlined'
             startIcon={<i className='ri-upload-2-line' />}
             className='max-sm:is-full'
@@ -482,8 +544,20 @@ const UserListTable = ({ tableData }) => {
             Export
           </Button>
 
-          <Button variant='contained' onClick={() => setAddUserOpen(!addUserOpen)} className='max-sm:is-full'>
-            Add New User
+          {/* Export Dropdown Menu */}
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleCloseExportMenu}
+          >
+            <MenuItem onClick={handleExportAll}>Export All</MenuItem>
+            <MenuItem onClick={handleExportSelected} disabled={!isAnyRowSelected}>
+              Export Selected
+            </MenuItem>
+          </Menu>
+
+          <Button variant='contained' onClick={()=>{router.push('/en/user/inviteUser')}} className='max-sm:is-full'>
+            + Invite User
           </Button>
         </div>
       </div>
@@ -494,12 +568,80 @@ const UserListTable = ({ tableData }) => {
             {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header, index) => (
-                  <th layout style={{ cursor: 'grabbing' }}>
+                  <th key={header.id}
+                  draggable // Makes the column header draggable
+                  onDragStart={() => handleDragStart(index)}
+                  onDragOver={handleDragOver}
+                  onDrop={() => handleDrop(index)}
+                  style={{ cursor: 'grab' }} >
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </th>
                 ))}
+
+                   <th style={{
+                     width: '50px',
+                     position: 'sticky',
+                     right: 0,
+
+
+                     textAlign: 'center',
+                     verticalAlign: 'middle'
+
+                    }}>
+    <IconButton onClick={handleClick}>
+      <i className='ri-eye-line text-textSecondary' />
+    </IconButton>
+
+    {/* Menu for column visibility */}
+    <Menu
+      anchorEl={anchorEl}
+      open={Boolean(anchorEl)}
+      onClose={() => setAnchorEl(null)}
+    >
+      <MenuItem>
+        <Checkbox
+          checked={visibleColumns.user}
+          onChange={() => setVisibleColumns(prev => ({ ...prev, user: !prev.user }))}
+        />
+        User
+      </MenuItem>
+      <MenuItem>
+        <Checkbox
+          checked={visibleColumns.email}
+          onChange={() => setVisibleColumns(prev => ({ ...prev, email: !prev.email }))}
+        />
+        Email
+      </MenuItem>
+      <MenuItem>
+        <Checkbox
+          checked={visibleColumns.role}
+          onChange={() => setVisibleColumns(prev => ({ ...prev, role: !prev.role }))}
+        />
+        Role
+      </MenuItem>
+      <MenuItem>
+        <Checkbox
+          checked={visibleColumns.status}
+          onChange={() => setVisibleColumns(prev => ({ ...prev, status: !prev.status }))}
+        />
+        Status
+      </MenuItem>
+      <MenuItem>
+        <Checkbox
+          checked={visibleColumns.phone}
+          onChange={() => setVisibleColumns(prev => ({ ...prev, phone: !prev.phone }))}
+        />
+        Phone Number
+      </MenuItem>
+    </Menu>
+                   </th>
+
               </tr>
             ))}
+
+
+
+
           </thead>
           <tbody>
             {table.getRowModel().rows.map(row => (
@@ -525,16 +667,16 @@ const UserListTable = ({ tableData }) => {
       </div>
       <Divider />
       <TablePagination
-        component='div'
-        rowsPerPageOptions={[10, 25, 50]}
-        count={filteredData.length}
-        rowsPerPage={10}
-        page={table.getState().pagination.pageIndex}
-        onPageChange={(event, newPage) => table.setPageIndex(newPage)}
-        onRowsPerPageChange={event => {
-          table.setPageSize(Number(event.target.value))
-        }}
-      />
+  component='div'
+  rowsPerPageOptions={[10, 25, 50]}
+  count={filteredData.length} // <-- Ensure this uses filteredData
+  rowsPerPage={10}
+  page={table.getState().pagination.pageIndex}
+  onPageChange={(event, newPage) => table.setPageIndex(newPage)}
+  onRowsPerPageChange={event => {
+    table.setPageSize(Number(event.target.value))
+  }}
+/>
       <AddUserDrawer
         // open={addUserOpen}
         handleClose={() => setAddUserOpen(!addUserOpen)}
