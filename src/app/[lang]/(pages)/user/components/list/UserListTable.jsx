@@ -1,14 +1,15 @@
 'use client'
-import CircularProgress from '@mui/material/CircularProgress'
-import InputLabel from '@mui/material/InputLabel'
-// React Imports
-import DialogBoxComponent from './DialogBoxComponent'
 import { useEffect, useState, useMemo, useCallback } from 'react'
+
+// React Imports
 
 // Next Imports
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
-import useUserApi from '../../Api/useUserApi'
+import { useParams , useRouter } from 'next/navigation'
+
+import InputLabel from '@mui/material/InputLabel'
+import CircularProgress from '@mui/material/CircularProgress'
+
 
 // MUI Imports
 import Card from '@mui/material/Card'
@@ -28,7 +29,7 @@ import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import DialogContentText from '@mui/material/DialogContentText'
 import DialogTitle from '@mui/material/DialogTitle'
-import useDraggableList from './useDraggableList';
+
 import { rankItem } from '@tanstack/match-sorter-utils'
 import {
   createColumnHelper,
@@ -43,6 +44,10 @@ import {
   getSortedRowModel
 } from '@tanstack/react-table'
 
+import DialogBoxComponent from './DialogBoxComponent'
+import useUserApi from '../../Api/useUserApi'
+import useDraggableList from './useDraggableList';
+
 // Component Imports
 import TableFilters from './TableFilters'
 import AddUserDrawer from './AddUserDrawer'
@@ -52,7 +57,6 @@ import CustomAvatar from '@core/components/mui/Avatar'
 import { getInitials } from '@/Utils/getInitials'
 import { getLocalizedUrl } from '@/Utils/i18n'
 import '../../style/styles.css'
-import { useRouter } from 'next/navigation'
 import tableStyles from '@core/styles/table.module.css'
 
 // Styled Components
@@ -93,16 +97,20 @@ const UserListTable = ({ tableData }) => {
   const [selectedStatus, setSelectedStatus] = useState('') // Track the status in the select dropdown
 
   const statusOptions = ['active', 'inactive', 'pending'] // Define status options
+
   // Function to open dialog and initialize the selected user's status
   const handleOpenStatusDialog = user => {
     setSelectedUser(user)
     setSelectedStatus(user.status) // Initialize the status with the user's current status
     setOpenStatusDialog(true)
   }
+
+
   // Function to close the dialog
   const handleCloseStatusDialog = () => {
     setOpenStatusDialog(false)
   }
+
   const [selectedRole, setSelectedRole] = useState('') // Track the status in the select dropdown
   const [openRoleDialog, setOpenRoleDialog] = useState(false) // Track dialog open/close
   const RoleOptions = ['admin', 'student', 'teacher'] // Define status options
@@ -126,6 +134,7 @@ const UserListTable = ({ tableData }) => {
   const [filteredData, setFilteredData] = useState(data)
   const [globalFilter, setGlobalFilter] = useState('')
   const [showFilter, setShowFilter] = useState(false) // Managing filter visibility
+
   const [visibleColumns, setVisibleColumns] = useState({
     user: true,
     email: true,
@@ -175,19 +184,25 @@ const UserListTable = ({ tableData }) => {
     if (selectedUser) {
       console.log(`User ${selectedUser.fullName} status changed to ${newStatus}`)
     }
+
     handleCloseStatusDialog()
   }
+
   const handleDragEnd = useCallback((fromIndex, toIndex) => {
     setColumnOrder(prevOrder => {
       const newOrder = [...prevOrder]
       const [removed] = newOrder.splice(fromIndex, 1)
+
       newOrder.splice(toIndex, 0, removed)
-      return newOrder
+
+return newOrder
     })
   }, [])
+
   useEffect(() => {
     setData(tableData)
   }, [tableData])
+
   const FilterDropdown = () => (
     <div className='filter-dropdown'>
       <div className='filter-field'>
@@ -239,13 +254,16 @@ const UserListTable = ({ tableData }) => {
   )
 
   const { lang: locale } = useParams()
+
   const handleRowClick = userId => {
     const userViewUrl = getLocalizedUrl('/apps/user/view', locale)
+
     window.location.href = `${userViewUrl}?id=${userId}`
   }
 
   const handleDeleteClick = (event, userId) => {
     event.stopPropagation(); // Prevent row click propagation
+
     if (isAnyRowSelected) {
       setUserToDelete(userId);
       setOpen(true);
@@ -283,6 +301,7 @@ const UserListTable = ({ tableData }) => {
   const handleExportSelected = () => {
     // Logic for exporting selected users
     const selectedUserIds = Object.keys(rowSelection);
+
     console.log('Exporting selected users:', selectedUserIds);
     handleCloseExportMenu();
   };
@@ -364,7 +383,7 @@ const UserListTable = ({ tableData }) => {
                   cell: ({ row }) => (
                     <div className='flex items-center gap-2'>
                       <Icon />
-                      <Typography>{row.original.role}</Typography>
+                      <Typography>{capitalizeFirstLetter(row.original.role)}</Typography>
                     </div>
                   )
                 })
@@ -404,12 +423,22 @@ const UserListTable = ({ tableData }) => {
                         <OptionMenu
                           iconClassName='text-textSecondary'
                           options={[
-                            { text: 'Edit' },
+                            {
+                              text: 'Edit',
+                              onClick: () => {
+                                console.log('Edit button clicked');
+                                router.push(`/en/user/editUser?guid=${row?.original?.guid}`);
+                              }
+
+
+
+                            },
                             {
                               text: 'View', // Add the View option
                               onClick: () => {
                                 const userId = row.original.id; // Assuming `id` is the unique user identifier
                                 const userViewUrl = getLocalizedUrl(`/apps/user/view?id=${userId}`, locale); // Create the URL
+
                                 window.location.href = userViewUrl; // Redirect to the user view page
                               }
                             },
@@ -468,27 +497,55 @@ const UserListTable = ({ tableData }) => {
   });
 
   const isAnyRowSelected = Object.keys(rowSelection).length > 0
+
   const calculateNewIndex = (xPosition, fromIndex) => {
     const columnWidth = 100 // Approximate width of each column, adjust as necessary
     const toIndex = Math.floor(xPosition / columnWidth)
-    return Math.max(0, Math.min(toIndex, columnOrder.length - 1))
+
+
+return Math.max(0, Math.min(toIndex, columnOrder.length - 1))
   }
 
   const getStatusLabel = (status) => {
-    if (status === 1) {
-      return 'Active';
-    } else if (status === 0) {
-      return 'Inactive';
-    } else if (status === null || status === undefined) {
-      return 'Pending'; // Handle both null and undefined cases
+    switch (status) {
+      case '1':
+        return 'Active';
+      case '0':
+        return 'Inactive';
+      case '':
+        return 'Pending';
+      default:
+        return 'Pending';
     }
-    return 'Pending'; // Fallback for any unknown cases
+  };
+
+
+  const capitalizeFirstLetter = (string) => {
+    if (!string) return '';
+
+return string.charAt(0).toUpperCase() + string.slice(1);
   };
 
 
 
   return (
     <Card>
+
+<div className='flex justify-between gap-2 p-2 flex-col items-start sm:flex-row sm:items-center'>
+
+        {/* Left div with Delete and Checkbox buttons */}
+        <div className='flex items-center gap-x-4 max-sm:gap-y-4 flex-col max-sm:is-full sm:flex-row' style={{ padding: '20px' }}>
+        <Typography variant='h4'>All Users</Typography>
+        </div>
+
+        {/* Right div with Search bar */}
+        <div className='flex items-center gap-x-4 max-sm:gap-y-4 flex-col max-sm:is-full sm:flex-row'>
+        <Button variant='contained' onClick={()=>{router.push('/en/user/inviteUser')}} className='max-sm:is-full'>
+            + Invite User
+          </Button>
+        </div>
+      </div>
+
       <TableFilters setData={setFilteredData} tableData={data} />
       {/* <Divider /> */}
       <div className='flex justify-between gap-2 p-2 flex-col items-start sm:flex-row sm:items-center'>
@@ -556,9 +613,7 @@ const UserListTable = ({ tableData }) => {
             </MenuItem>
           </Menu>
 
-          <Button variant='contained' onClick={()=>{router.push('/en/user/inviteUser')}} className='max-sm:is-full'>
-            + Invite User
-          </Button>
+
         </div>
       </div>
 
@@ -678,6 +733,7 @@ const UserListTable = ({ tableData }) => {
   }}
 />
       <AddUserDrawer
+
         // open={addUserOpen}
         handleClose={() => setAddUserOpen(!addUserOpen)}
         userData={data}

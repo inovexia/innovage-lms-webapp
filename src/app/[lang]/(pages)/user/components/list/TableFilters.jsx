@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+
 import { Checkbox, MenuItem, Select, ListItemText, FormControl, InputLabel, CardContent, Grid, TextField, Typography } from '@mui/material';
+
 import useUserApi from '../../Api/useUserApi';
 
 const TableFilters = ({ setData, tableData }) => {
@@ -15,6 +17,7 @@ const TableFilters = ({ setData, tableData }) => {
   useEffect(() => {
     if (userData?.length > 0) {
       const uniqueRoles = [...new Set(userData.map(user => user.role))]; // Get unique roles
+
       setRoles(uniqueRoles);
     }
   }, [userData]);
@@ -30,8 +33,12 @@ const TableFilters = ({ setData, tableData }) => {
       // Filter by selected roles
       if (selectedRoles.length > 0 && !selectedRoles.includes(user.role)) return false;
 
-      // Filter by selected statuses
-      if (selectedStatuses.length > 0 && !selectedStatuses.includes(user.status === 1 ? 'active' : user.status === 0 ? 'inactive' : 'pending')) return false;
+      // Normalize user status and compare with selectedStatuses
+      const userStatus = user.status === '1' ? 'active' : user.status === '0' ? 'inactive' : user.status === '' ? 'pending' : 'unknown';
+
+      if (selectedStatuses.length > 0 && !selectedStatuses.includes(userStatus.toLowerCase())) {
+        return false;
+      }
 
       return true;
     });
@@ -42,12 +49,14 @@ const TableFilters = ({ setData, tableData }) => {
   // Handle role selection
   const handleRoleChange = (event) => {
     const { value } = event.target;
+
     setSelectedRoles(typeof value === 'string' ? value.split(',') : value); // Allow multiple selection
   };
 
   // Handle status selection
   const handleStatusChange = (event) => {
     const { value } = event.target;
+
     setSelectedStatuses(typeof value === 'string' ? value.split(',') : value); // Allow multiple selection
   };
 

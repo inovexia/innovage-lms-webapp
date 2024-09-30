@@ -1,6 +1,8 @@
 'use client'
 import { useState } from 'react'
 
+import { useSearchParams, useRouter } from 'next/navigation'
+
 import Grid from '@mui/material/Grid'
 
 // Component Imports
@@ -10,19 +12,26 @@ import TabContext from '@mui/lab/TabContext'
 
 import TabPanel from '@mui/lab/TabPanel'
 
-import EditForm from '@/app/[lang]/(pages)/user/components/editUser/account/EditForm'
-import UserProfileHeader from '@/app/[lang]/(pages)/user/components/editUser/UserProfileHeader'
+import EditForm from './account/EditForm'
+import UserProfileHeader from './UserProfileHeader'
 
-import DeleteCard from '@/app/[lang]/(pages)/user/components/editUser/account/DeleteCard'
-import DeactivateCard from '@/app/[lang]/(pages)/user/components/editUser/account/DeactivateCard'
+import DeleteCard from './account/DeleteCard'
+import DeactivateCard from './account/DeactivateCard'
 
 import CustomTabList from '@core/components/mui/TabList'
-import ChangePasswordEmail from '@/app/[lang]/(pages)/user/components/editUser/changePassword/ChangePasswordEmail'
+import ChangePasswordEmail from './changePassword/ChangePasswordEmail'
+import ChangePasswordManually from './changePassword/ChangePasswordManually'
+import ChangePasswordOtp from './changePassword/ChangePasswordOtp'
+import BillingPlan from './billingPlan'
+import CurrentPlan from './billingPlan/CurrentPlan'
+import Address from './billingPlan/Address'
+import PaymentMethod from './billingPlan/PaymentMethod'
 
-import ChangePasswordOtp from '@/app/[lang]/(pages)/user/components/editUser//changePassword/ChangePasswordOtp'
-import ChangePasswordManually from '@/app/[lang]/(pages)/user/components/editUser/changePassword/ChangePasswordManually'
+const EditUser = () => {
+  const searchParams = useSearchParams()
+  const guid = searchParams.get('guid')
 
-const Account = () => {
+  console.log(guid);
 
   const [activeTab, setActiveTab] = useState('account') // Ensure activeTab is initialized properly
 
@@ -34,7 +43,7 @@ const Account = () => {
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
-        <UserProfileHeader/>
+        <UserProfileHeader />
       </Grid>
       <Grid item xs={12}>
       <TabContext value={activeTab}>
@@ -89,16 +98,21 @@ const Account = () => {
          {/* TabPanels to render content for each tab */}
       <TabPanel value='account' sx={{ marginTop: 10 }} spacing ={6}>
 
-        <EditForm isAdmin={true} />
+        <EditForm />
         <DeleteCard />
-
+        <DeactivateCard />
 
         {/* Render Account Edit Form */}
       </TabPanel>
       <TabPanel value='changePassword'  sx={{ marginTop: 10 }} >
-        <ChangePasswordManually  sx={{ marginBottom: 4 }} />
-        <ChangePasswordOtp sx={{ marginBottom: 4 }}  />
+
         <ChangePasswordEmail /> {/* Render Change Password Form */}
+      </TabPanel>
+
+      <TabPanel value='billing'  sx={{ marginTop: 10 }} >
+
+        <CurrentPlan />
+        <PaymentMethod /> {/* Render Change Password Form */}
       </TabPanel>
 
 
@@ -115,4 +129,4 @@ const Account = () => {
   )
 }
 
-export default Account
+export default EditUser
