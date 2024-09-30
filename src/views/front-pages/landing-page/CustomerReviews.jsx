@@ -14,12 +14,12 @@ import classnames from 'classnames'
 import AppKeenSlider from '@/libs/styles/AppKeenSlider'
 
 // SVG Imports
-import Lines from '@assets/svg/front-pages/landing-page/Lines'
-import Levis from '@assets/svg/front-pages/landing-page/Levis'
-import Continental from '@assets/svg/front-pages/landing-page/Continental'
-import Eckerd from '@assets/svg/front-pages/landing-page/Eckerd'
-import Dribbble from '@assets/svg/front-pages/landing-page/Dribbble'
-import Airbnb from '@assets/svg/front-pages/landing-page/Airbnb'
+import Lines from '@/Assets/svg/front-pages/landing-page/Lines'
+import Levis from '@/Assets/svg/front-pages/landing-page/Levis'
+import Continental from '@/Assets/svg/front-pages/landing-page/Continental'
+import Eckerd from '@/Assets/svg/front-pages/landing-page/Eckerd'
+import Dribbble from '@/Assets/svg/front-pages/landing-page/Dribbble'
+import Airbnb from '@/Assets/svg/front-pages/landing-page/Airbnb'
 
 // Styles Imports
 import frontCommonStyles from '@views/front-pages/styles.module.css'

@@ -7,16 +7,17 @@ import 'react-perfect-scrollbar/dist/css/styles.css'
 // Component Imports
 
 // HOC Imports
+import { i18n } from '@configs/i18n'
+
 import TranslationWrapper from '@/hocs/TranslationWrapper'
 
 // Config Imports
-import { i18n } from '@configs/i18n'
 
 // Style Imports
 import '@/app/globals.css'
 
 // Generated Icon CSS Imports
-import '@assets/iconify-icons/generated-icons.css'
+import '@assets/iconify-icons/bundle-icons-css'
 
 export const metadata = {
   title: 'Materialize - Material Next.js Admin Template',

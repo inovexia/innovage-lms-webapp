@@ -10,8 +10,8 @@ import { styled } from '@mui/material/styles'
 import { useIntersection } from '@/hooks/useIntersection'
 
 // SVG Imports
-import ElementOne from '@/assets/svg/front-pages/landing-page/ElementOne'
-import Lines from '@assets/svg/front-pages/landing-page/Lines'
+import ElementOne from '@/Assets/svg/front-pages/landing-page/ElementOne'
+import Lines from '@/Assets/svg/front-pages/landing-page/Lines'
 
 // Styles Imports
 import frontCommonStyles from '@views/front-pages/styles.module.css'

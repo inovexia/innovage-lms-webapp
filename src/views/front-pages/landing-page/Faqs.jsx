@@ -15,8 +15,8 @@ import classnames from 'classnames'
 import { useIntersection } from '@/hooks/useIntersection'
 
 // SVG Imports
-import ElementOne from '@/assets/svg/front-pages/landing-page/ElementOne'
-import Lines from '@assets/svg/front-pages/landing-page/Lines'
+import ElementOne from '@/Assets/svg/front-pages/landing-page/ElementOne'
+import Lines from '@/Assets/svg/front-pages/landing-page/Lines'
 
 // Styles Imports
 import frontCommonStyles from '@views/front-pages/styles.module.css'

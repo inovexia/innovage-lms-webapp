@@ -9,9 +9,9 @@ import CardContent from '@mui/material/CardContent'
 import Grid from '@mui/material/Grid'
 
 // SVG Imports
-import Laptop from '@assets/svg/front-pages/help-center/Laptop'
-import Bulb from '@assets/svg/front-pages/help-center/Bulb'
-import Discord from '@assets/svg/front-pages/help-center/Discord'
+import Laptop from '@/Assets/svg/front-pages/help-center/Laptop'
+import Bulb from '@/Assets/svg/front-pages/help-center/Bulb'
+import Discord from '@/Assets/svg/front-pages/help-center/Discord'
 
 // Styles Imports
 import frontCommonStyles from '@views/front-pages/styles.module.css'

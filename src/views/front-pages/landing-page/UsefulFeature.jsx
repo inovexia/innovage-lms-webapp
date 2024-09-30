@@ -12,13 +12,13 @@ import classnames from 'classnames'
 import { useIntersection } from '@/hooks/useIntersection'
 
 // SVG Imports
-import Lines from '@assets/svg/front-pages/landing-page/Lines'
-import LaptopCharging from '@assets/svg/front-pages/landing-page/LaptopCharging'
-import TransitionUp from '@assets/svg/front-pages/landing-page/TransitionUp'
-import Edit from '@assets/svg/front-pages/landing-page/Edit'
-import Cube from '@assets/svg/front-pages/landing-page/Cube'
-import LifeBuoy from '@assets/svg/front-pages/landing-page/Lifebuoy'
-import Document from '@assets/svg/front-pages/landing-page/Document'
+import Lines from '@/Assets/svg/front-pages/landing-page/Lines'
+import LaptopCharging from '@/Assets/svg/front-pages/landing-page/LaptopCharging'
+import TransitionUp from '@/Assets/svg/front-pages/landing-page/TransitionUp'
+import Edit from '@/Assets/svg/front-pages/landing-page/Edit'
+import Cube from '@/Assets/svg/front-pages/landing-page/Cube'
+import LifeBuoy from '@/Assets/svg/front-pages/landing-page/Lifebuoy'
+import Document from '@/Assets/svg/front-pages/landing-page/Document'
 
 // Styles Imports
 import styles from './styles.module.css'

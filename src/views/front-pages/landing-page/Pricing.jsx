@@ -21,10 +21,10 @@ import classnames from 'classnames'
 import frontCommonStyles from '@views/front-pages/styles.module.css'
 
 // SVG Imports
-import Lines from '@assets/svg/front-pages/landing-page/Lines'
-import Curve from '@assets/svg/front-pages/landing-page/Curve'
-import Arrow from '@assets/svg/front-pages/landing-page/Arrow'
-import ElementTwo from '@/assets/svg/front-pages/landing-page/ElementTwo'
+import Lines from '@/Assets/svg/front-pages/landing-page/Lines'
+import Curve from '@/Assets/svg/front-pages/landing-page/Curve'
+import Arrow from '@/Assets/svg/front-pages/landing-page/Arrow'
+import ElementTwo from '@/Assets/svg/front-pages/landing-page/ElementTwo'
 
 const pricingPlans = [
   {

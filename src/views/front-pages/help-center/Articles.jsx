@@ -9,9 +9,9 @@ import CardContent from '@mui/material/CardContent'
 import Grid from '@mui/material/Grid'
 
 // SVG Imports
-import Gift from '@assets/svg/front-pages/help-center/Gift'
-import Rocket from '@assets/svg/front-pages/help-center/Rocket'
-import File from '@assets/svg/front-pages/help-center/File'
+import Gift from '@/Assets/svg/front-pages/help-center/Gift'
+import Rocket from '@/Assets/svg/front-pages/help-center/Rocket'
+import File from '@/Assets/svg/front-pages/help-center/File'
 
 // Styles Imports
 import frontCommonStyles from '@views/front-pages/styles.module.css'
